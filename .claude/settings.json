@@ -1,0 +1,35 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "intercept",
+            "command": "FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | python3 -c \"import sys,json; print(json.load(sys.stdin).get('file_path',''))\"); if echo \"$FILE\" | grep -qE '\\.env$'; then echo 'BLOCK: .env contains API keys — do not edit it'; exit 1; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "intercept",
+            "command": "FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | python3 -c \"import sys,json; print(json.load(sys.stdin).get('file_path',''))\"); if echo \"$FILE\" | grep -qE 'requirements\\.txt$'; then echo 'BLOCK: Do not overwrite requirements.txt — use Edit to add individual deps'; exit 1; fi"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | python3 -c \"import sys,json; print(json.load(sys.stdin).get('file_path',''))\"); if echo \"$FILE\" | grep -qE 'agents/.*\\.py$'; then cd /Users/prakashtupe/lead-automation && python3 -c 'import agents' 2>&1 || echo 'WARNING: Agent import check failed — fix before continuing'; fi"
+          }
+        ]
+      }
+    ]
+  }
+}

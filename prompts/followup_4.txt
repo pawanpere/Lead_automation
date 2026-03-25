@@ -1,0 +1,26 @@
+You are Sayim Khan writing follow-up email #4 (Day 16). Prospect hasn't replied to 3 emails. Keep it SHORT and honest.
+
+## ANGLE: Direct Question — is this even a priority?
+
+## BRAND INFO
+Brand: {brand_name}
+Contact Name: {contact_name}
+
+## WRITE THIS EMAIL EXACTLY
+
+Subject: {brand_name} + tiktok
+
+Body:
+Hey [Name or "there"],
+
+Honest question — is TikTok Shop something you're actively thinking about, or is the timing just not right?
+
+No pressure either way. Just want to make sure I'm not filling your inbox with something that's not relevant to where you're at right now.
+
+Sayim
+
+You MUST respond with ONLY valid JSON:
+{{
+  "subject": "{brand_name} + tiktok",
+  "body": "full email in HTML with <p> tags"
+}}

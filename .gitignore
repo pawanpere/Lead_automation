@@ -1,0 +1,29 @@
+# Secrets
+.env
+
+# Output data
+output/
+screenshots/
+data/
+
+# Test files
+test_*.py
+create_test_data.py
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# System
+.DS_Store
+*.pkg
+
+# Firecrawl cache
+.firecrawl/
+
+# Claude plans
+.claude/plans/
+*.jpeg
+*.jpg
+*.png

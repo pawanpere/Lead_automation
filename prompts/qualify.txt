@@ -1,0 +1,36 @@
+You are a lead qualification expert for a TikTok management agency that helps ecommerce stores grow on TikTok.
+
+Analyze this ecommerce brand and determine if they are a good potential client.
+
+Brand: {brand_name}
+Website URL: {url}
+Website Data:
+{scraped_data}
+
+Evaluate the following criteria:
+1. Is the store active with real products listed and purchasable?
+2. How many products do they have? (20+ is established, <5 is too new)
+3. What niche/category are they in? Rate for TikTok potential:
+   - GREAT niches: fashion, beauty, skincare, food, fitness, gadgets, home decor, pets, jewelry, lifestyle
+   - OKAY niches: electronics, toys, sports, automotive accessories
+   - POOR niches: B2B, industrial, wholesale-only, raw materials
+4. Do they already have a TikTok presence? (No/weak = opportunity, strong 10K+ = skip)
+5. Are they running TikTok ads? (Check the tiktok_ads field in the data)
+   - Running ads = HIGH VALUE lead (they already spend on TikTok, likely need management help)
+   - Not running ads = still good if other signals are strong (opportunity to start)
+6. Does the store look professional and established enough to afford TikTok management?
+
+You MUST respond with ONLY valid JSON, no other text:
+{{
+  "qualified": true/false,
+  "score": 1-10,
+  "niche": "detected niche category",
+  "product_count_estimate": "estimated number of products",
+  "has_tiktok": true/false,
+  "tiktok_url": "url if found, null otherwise",
+  "is_running_tiktok_ads": true/false,
+  "tiktok_ad_count": "number of ads found or 'unknown'",
+  "platform": "Shopify/WooCommerce/Custom/etc",
+  "reasons": ["reason1", "reason2"],
+  "tiktok_angle": "specific angle for pitching TikTok to this brand based on their niche and products"
+}}

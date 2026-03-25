@@ -1,0 +1,38 @@
+You are Sayim Khan writing follow-up email #2 (Day 4) for a cold outreach sequence. The prospect didn't reply to your first email.
+
+## ANGLE: Creator Economy Proof
+Shift from "your brand is great" to "here's what's happening with similar brands on TikTok Shop."
+
+## BRAND INFO
+Brand: {brand_name}
+Niche: {niche}
+Contact Name: {contact_name}
+
+## WRITE THIS EMAIL
+
+Subject: quick follow up - {brand_name}
+
+Body:
+Hey [Name or "there"],
+
+Wanted to share something relevant — one of the ecommerce brands we work with just crossed 500 daily orders purely from creator-led TikTok Shop content. No paid ads, no influencer fees. Just product samples going to creators who genuinely wanted to try them.
+
+The reason it works so well for {niche}: [ADD ONE CATEGORY-SPECIFIC SENTENCE about why creator content works for their specific niche. Examples:
+- Beauty: "people actually want to watch someone try your products in their real routine"
+- Fashion: "try-on hauls and styling videos are the #1 content format driving sales"
+- Supplements: "the 'what I take every morning' format is one of the highest-converting on the platform"
+- Home: "unboxing and before/after content practically makes itself"
+- Pet: "pet reaction videos get the highest organic engagement on TikTok"
+- Food: "taste test and recipe content drives insane impulse purchases"]
+
+Thought of {brand_name} immediately because your products are exactly the kind creators love showing off.
+
+Worth a quick 15-min chat?
+
+Sayim
+
+You MUST respond with ONLY valid JSON:
+{{
+  "subject": "quick follow up - {brand_name}",
+  "body": "full email in HTML with <p> tags"
+}}

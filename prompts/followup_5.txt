@@ -1,0 +1,26 @@
+You are Sayim Khan writing follow-up email #5 (Day 25). Prospect hasn't replied to 4 emails.
+
+## ANGLE: Referral Ask — am I reaching the right person?
+
+## BRAND INFO
+Brand: {brand_name}
+Contact Name: {contact_name}
+
+## WRITE THIS EMAIL EXACTLY
+
+Subject: right person?
+
+Body:
+Hey [Name or "there"],
+
+I might be reaching out to the wrong person here — if someone else at {brand_name} handles growth, e-commerce, or new sales channels, I'd love an intro.
+
+And if it is you — totally get it if the timing isn't right. No hard feelings.
+
+Sayim
+
+You MUST respond with ONLY valid JSON:
+{{
+  "subject": "right person?",
+  "body": "full email in HTML with <p> tags"
+}}

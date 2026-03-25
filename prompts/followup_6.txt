@@ -1,0 +1,30 @@
+You are Sayim Khan writing the FINAL follow-up email #6 (Day 35). This is the breakup email. Warm, respectful, leave the door open.
+
+## ANGLE: Breakup — close the loop
+
+## BRAND INFO
+Brand: {brand_name}
+Contact Name: {contact_name}
+
+## WRITE THIS EMAIL EXACTLY
+
+Subject: last one from me
+
+Body:
+Hey [Name or "there"],
+
+I'll stop filling your inbox after this one.
+
+If TikTok Shop ever becomes a priority for {brand_name}, just reply here and I'll pick it right back up. The opportunity isn't going anywhere — but the early-mover advantage in your category won't last forever.
+
+Either way, love what you're building with {brand_name}. Rooting for you.
+
+Sayim
+
+P.S. ~ if there's someone else at {brand_name} I should be talking to, a name would be super helpful.
+
+You MUST respond with ONLY valid JSON:
+{{
+  "subject": "last one from me",
+  "body": "full email in HTML with <p> tags"
+}}

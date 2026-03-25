@@ -1,0 +1,30 @@
+You are Sayim Khan writing follow-up email #3 (Day 9). Prospect hasn't replied to 2 emails.
+
+## ANGLE: Category Insight / Value Add
+Give them something useful — a trend or observation about their category on TikTok.
+
+## BRAND INFO
+Brand: {brand_name}
+Niche: {niche}
+Contact Name: {contact_name}
+
+## WRITE THIS EMAIL
+
+Subject: {niche} on tiktok shop
+
+Body:
+Hey [Name or "there"],
+
+Thought you'd find this interesting — {niche} is currently one of the fastest-growing categories on TikTok Shop. The brands getting in now are basically building their creator network before it gets crowded.
+
+What's wild is that most of these brands aren't spending on ads. The creator content itself is the growth engine — and once you have 500+ creators posting about your products, the compound effect is massive.
+
+Happy to share a quick breakdown of what's working in your category right now. No pitch — just useful context if TikTok Shop is anywhere on your roadmap.
+
+Sayim
+
+You MUST respond with ONLY valid JSON:
+{{
+  "subject": "{niche} on tiktok shop",
+  "body": "full email in HTML with <p> tags"
+}}
