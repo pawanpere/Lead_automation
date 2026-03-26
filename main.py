@@ -25,7 +25,7 @@ from datetime import datetime
 
 from openpyxl import load_workbook
 
-from agents import ScraperAgent, QualifyAgent, EmailAgent
+from agents import ScraperAgent, QualifyAgent, EmailAgent, PrevalidationAgent
 
 # --- Logging setup ---
 logging.basicConfig(
@@ -104,16 +104,30 @@ async def process_brand(lead: dict, dry_run: bool = False) -> dict:
         "url": lead["url"],
         "email": lead["email"],
         "timestamp": datetime.now().isoformat(),
+        "prevalidation": None,
         "scrape": None,
         "qualification": None,
         "email_result": None,
         "status": "pending",
     }
 
-    # --- Agent 1: Scrape ---
+    # --- Stage 0: Pre-Validation ---
     logger.info(f"{'='*50}")
     logger.info(f"BRAND: {brand}")
     logger.info(f"{'='*50}")
+    logger.info(f"[0/3] Running pre-validation for {brand}...")
+
+    preval = await PrevalidationAgent.run(brand_name=brand, url=lead["url"])
+    result["prevalidation"] = preval
+
+    if not preval["valid"]:
+        result["status"] = f"prevalidation_failed:{preval['check_failed']}"
+        logger.warning(
+            f"[PrevalidationAgent] {brand} FAILED: {preval['reason']}"
+        )
+        return result
+
+    # --- Agent 1: Scrape ---
     logger.info(f"[1/3] Firing ScraperAgent for {brand}...")
 
     scrape_result = await ScraperAgent.run(
@@ -142,18 +156,23 @@ async def process_brand(lead: dict, dry_run: bool = False) -> dict:
     )
     result["qualification"] = qualification
 
-    if not qualification.get("qualified"):
-        result["status"] = "not_qualified"
+    tier = qualification.get("tier", "disqualified")
+    composite = qualification.get("composite_score", qualification.get("score", 0))
+
+    if not qualification.get("qualified") or tier in ("parked", "disqualified"):
+        result["status"] = f"not_qualified:{tier}"
         logger.info(
             f"[QualifyAgent] {brand} NOT QUALIFIED "
-            f"(score: {qualification.get('score', '?')}, "
+            f"(composite: {composite}, tier: {tier}, "
             f"reasons: {qualification.get('reasons', [])})"
         )
+        if qualification.get("disqualify_reason"):
+            logger.info(f"[QualifyAgent] Disqualify reason: {qualification['disqualify_reason']}")
         return result
 
     logger.info(
         f"[QualifyAgent] {brand} QUALIFIED! "
-        f"(score: {qualification.get('score')}, niche: {qualification.get('niche')})"
+        f"(composite: {composite}, tier: {tier}, niche: {qualification.get('niche')})"
     )
 
     # --- Agent 3: Email ---
@@ -253,15 +272,21 @@ async def main():
     logger.info("=" * 60)
 
     total = len(all_results)
+    preval_failed = sum(1 for r in all_results if "prevalidation_failed" in r.get("status", ""))
+    scrape_failed = sum(1 for r in all_results if r.get("status") == "scrape_failed")
+    not_qualified = sum(1 for r in all_results if "not_qualified" in r.get("status", ""))
     qualified = sum(1 for r in all_results if r.get("status") in ("email_sent", "email_failed", "qualified_dry_run", "qualified_no_email"))
+    hot = sum(1 for r in all_results if r.get("qualification", {}).get("tier") == "hot")
+    warm = sum(1 for r in all_results if r.get("qualification", {}).get("tier") == "warm")
     sent = sum(1 for r in all_results if r.get("status") == "email_sent")
-    failed = sum(1 for r in all_results if "failed" in r.get("status", ""))
 
-    logger.info(f"Total brands processed:  {total}")
-    logger.info(f"Qualified leads:         {qualified}")
-    logger.info(f"Emails sent:             {sent}")
-    logger.info(f"Failed:                  {failed}")
-    logger.info(f"Results saved to:        {OUTPUT_FILE}")
+    logger.info(f"Total brands processed:    {total}")
+    logger.info(f"Pre-validation failed:     {preval_failed}")
+    logger.info(f"Scrape failed:             {scrape_failed}")
+    logger.info(f"Not qualified:             {not_qualified}")
+    logger.info(f"Qualified leads:           {qualified} (hot: {hot}, warm: {warm})")
+    logger.info(f"Emails sent:               {sent}")
+    logger.info(f"Results saved to:          {OUTPUT_FILE}")
     logger.info("=" * 60)
 
 

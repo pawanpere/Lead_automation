@@ -1,36 +1,98 @@
-You are a lead qualification expert for a TikTok management agency that helps ecommerce stores grow on TikTok.
-
-Analyze this ecommerce brand and determine if they are a good potential client.
+You are a lead qualification expert for a TikTok Shop management team. Your job is to analyze an ecommerce brand's website data and determine if they are a good potential client.
 
 Brand: {brand_name}
 Website URL: {url}
 Website Data:
 {scraped_data}
 
-Evaluate the following criteria:
-1. Is the store active with real products listed and purchasable?
-2. How many products do they have? (20+ is established, <5 is too new)
-3. What niche/category are they in? Rate for TikTok potential:
-   - GREAT niches: fashion, beauty, skincare, food, fitness, gadgets, home decor, pets, jewelry, lifestyle
-   - OKAY niches: electronics, toys, sports, automotive accessories
-   - POOR niches: B2B, industrial, wholesale-only, raw materials
-4. Do they already have a TikTok presence? (No/weak = opportunity, strong 10K+ = skip)
-5. Are they running TikTok ads? (Check the tiktok_ads field in the data)
-   - Running ads = HIGH VALUE lead (they already spend on TikTok, likely need management help)
-   - Not running ads = still good if other signals are strong (opportunity to start)
-6. Does the store look professional and established enough to afford TikTok management?
+## STAGE 1: HARD DISQUALIFIERS
+
+Check each of these. If ANY are true, the lead is immediately disqualified. Set "qualified" to false and provide the specific disqualify_reason.
+
+| Disqualifier | What to Look For |
+|---|---|
+| Not an e-commerce brand | No product catalog, no shopping cart, no product pages visible |
+| Digital-only products | SaaS, courses, ebooks, downloads, subscriptions with no physical product |
+| Local service business | Plumber, HVAC, dentist, landscaper, etc. with service pages but no online store |
+| Marketplace-only seller | No branded website, only links to Amazon, Etsy, or eBay listings |
+| Brand outside target geography | Currency, shipping info, or language indicates non-US market |
+| B2B / wholesale only | No DTC storefront, requires login, shows MOQs, or trade accounts only |
+| Franchise / national chain | Site belongs to a franchise operation or major national retailer, not a standalone brand |
+
+If ANY disqualifier is triggered, stop here. Return qualified: false with the disqualify_reason.
+
+## STAGE 2: WEIGHTED SCORING (1-5 scale)
+
+If the lead passes all hard disqualifiers, score them on these 5 criteria:
+
+### 1. Product Visual Appeal (Weight: 30%)
+- Score 1: Plain/generic products, no lifestyle imagery, stock photos
+- Score 3: Decent product photos, some lifestyle shots
+- Score 5: Highly visual products, strong lifestyle branding, UGC-ready imagery
+
+### 2. Brand Identity Strength (Weight: 20%)
+- Score 1: Generic store, no brand story, looks like a dropship operation
+- Score 3: Has a brand name and some identity but thin
+- Score 5: Strong brand, recognizable aesthetic, community language, mission-driven
+
+### 3. TikTok Presence Gap (Weight: 20%)
+- Score 1: TikTok Shop link visible on site, active creator program evident (already doing it, skip)
+- Score 3: TikTok link present but no Shop or low activity signals
+- Score 5: No TikTok link anywhere on site despite strong brand (big opportunity)
+
+### 4. Product Category Fit (Weight: 15%)
+Use these tiers:
+- **Tier A (score 5):** Fashion & Apparel, Beauty & Skincare, Health & Wellness, Fitness
+- **Tier B (score 3-4):** Home & Kitchen, Pet Products, Food & Beverage, Baby & Kids, Books
+- **Tier C (score 1-2):** Tech Accessories, Outdoor, Stationery, other niche categories
+- **Poor fit (score 1):** Industrial, hardware, commodities, B2B
+
+### 5. Estimated Scale (Weight: 15%)
+- Score 1: Very early stage, fewer than 10 products, no social proof visible
+- Score 3: Established store, moderate catalog, some reviews on site
+- Score 5: Large catalog, visible reviews/testimonials, press logos, likely $1M+ revenue
+
+## COMPOSITE SCORE CALCULATION
+composite_score = (visual_appeal * 0.30) + (brand_identity * 0.20) + (tiktok_gap * 0.20) + (category_fit * 0.15) + (estimated_scale * 0.15)
+
+## QUALIFICATION TIERS
+- 4.0 - 5.0 = "hot" (qualified, pass to outreach immediately)
+- 3.0 - 3.9 = "warm" (qualified, lower priority)
+- 2.0 - 2.9 = "parked" (not qualified now, hold for future)
+- Below 2.0 = "disqualified" (discard)
+
+Minimum threshold for outreach: 3.0
+
+## ADDITIONAL DATA TO EXTRACT
+- Brand name (from logo, header, or page title)
+- Product category / niche
+- E-commerce platform (Shopify, WooCommerce, BigCommerce, etc.)
+- TikTok status: "none" (no link), "profile_only" (link but no shop), "active_shop" (has TikTok Shop)
+- Whether they are running TikTok ads (check tiktok_ads field in the data)
+- Estimated product count
+- A specific TikTok angle for pitching this brand based on their niche and products
 
 You MUST respond with ONLY valid JSON, no other text:
 {{
   "qualified": true/false,
-  "score": 1-10,
+  "composite_score": 0.0-5.0,
+  "tier": "hot" | "warm" | "parked" | "disqualified",
+  "disqualify_reason": "reason if disqualified by hard filter, null otherwise",
+  "scores": {{
+    "visual_appeal": 1-5,
+    "brand_identity": 1-5,
+    "tiktok_gap": 1-5,
+    "category_fit": 1-5,
+    "estimated_scale": 1-5
+  }},
   "niche": "detected niche category",
   "product_count_estimate": "estimated number of products",
   "has_tiktok": true/false,
   "tiktok_url": "url if found, null otherwise",
+  "tiktok_status": "none" | "profile_only" | "active_shop",
   "is_running_tiktok_ads": true/false,
   "tiktok_ad_count": "number of ads found or 'unknown'",
-  "platform": "Shopify/WooCommerce/Custom/etc",
+  "platform": "Shopify/WooCommerce/BigCommerce/Custom/etc",
   "reasons": ["reason1", "reason2"],
   "tiktok_angle": "specific angle for pitching TikTok to this brand based on their niche and products"
 }}
