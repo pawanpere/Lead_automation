@@ -89,130 +89,13 @@ class ScraperAgent:
                     scraped["owner_name"] = owner_name
                     logger.info(f"[ScraperAgent] Found owner: {owner_name}")
 
-                # --- Get a real product URL and screenshot it ---
-                # Step 1: Try to get a real product URL from Shopify /products.json
-                real_product_url = await _get_product_url_from_api(url, scraped.get("platform", ""))
-                target_url = real_product_url or product_url or url
-
-                logger.info(f"[ScraperAgent] Target product URL: {target_url}")
-
-                try:
-                    await page.goto(target_url, wait_until="domcontentloaded", timeout=30000)
-                    await page.wait_for_timeout(3000)
-                except Exception as e:
-                    logger.warning(f"[ScraperAgent] Product page nav failed: {e}")
-
-                # Handle 404s
-                try:
-                    if await _is_error_page(page):
-                        logger.warning(f"[ScraperAgent] Error page, trying collections: {url}/collections/all")
-                        await page.goto(f"{url}/collections/all", wait_until="domcontentloaded", timeout=30000)
-                        await page.wait_for_timeout(3000)
-                except Exception:
-                    pass
-
-                try:
-                    await _dismiss_popups(page)
-                except Exception:
-                    pass
-
-                # === ATTEMPT 1: Screenshot the product/collection page ===
-                if real_product_url:
-                    screenshot_ok = await _screenshot_product_page(page, screenshot_path, brand_name)
-                else:
-                    screenshot_ok = await _screenshot_collection_page(page, screenshot_path, brand_name)
-
-                if screenshot_ok:
-                    result["screenshot_path"] = screenshot_path
-
-                    # === AI QUALITY CHECK — Claude looks at the screenshot ===
-                    from agents.quality_checker import QualityChecker
-
-                    quality = await QualityChecker.check_page(page, screenshot_path, brand_name)
-
-                    if quality.get("good"):
-                        result["screenshot_method"] = "playwright"
-                        logger.info(f"[ScraperAgent] Screenshot PASSED AI check: {quality.get('reason', '')}")
-                    else:
-                        logger.warning(
-                            f"[ScraperAgent] Screenshot FAILED AI check: {quality.get('reason', '')} "
-                            f"| Suggestion: {quality.get('suggestion', '')}"
-                        )
-
-                        # === ATTEMPT 2: Nuke overlays + retry ===
-                        logger.info(f"[ScraperAgent] Retry 1: Nuking overlays...")
-                        await _nuke_all_overlays(page)
-                        await page.evaluate("window.scrollTo(0, 0)")
-                        await page.wait_for_timeout(2000)
-                        await page.screenshot(path=screenshot_path, full_page=False)
-
-                        quality2 = await QualityChecker.check_page(page, screenshot_path, brand_name)
-                        if quality2.get("good"):
-                            result["screenshot_method"] = "playwright-retry-nuke"
-                            logger.info(f"[ScraperAgent] Retry 1 PASSED: {quality2.get('reason', '')}")
-                        else:
-                            # === ATTEMPT 3: Try different URL strategy ===
-                            logger.info(f"[ScraperAgent] Retry 2: Trying different URL...")
-                            retry_urls = [
-                                f"{url}/collections/all",
-                                f"{url}/collections/best-sellers",
-                                f"{url}/collections",
-                                f"{url}/shop",
-                            ]
-                            # Don't retry URLs we already tried
-                            current = page.url.split("?")[0].rstrip("/")
-                            retry_urls = [u for u in retry_urls if u.rstrip("/") != current]
-
-                            retried = False
-                            for retry_url in retry_urls[:2]:  # Try max 2 URLs
-                                try:
-                                    logger.info(f"[ScraperAgent] Trying: {retry_url}")
-                                    await page.goto(retry_url, wait_until="domcontentloaded", timeout=20000)
-                                    await page.wait_for_timeout(4000)
-                                    await _dismiss_popups(page)
-                                    await page.wait_for_timeout(1000)
-                                    await page.evaluate("window.scrollTo(0, 0)")
-                                    await page.wait_for_timeout(1000)
-                                    await page.screenshot(path=screenshot_path, full_page=False)
-
-                                    quality3 = await QualityChecker.check_page(page, screenshot_path, brand_name)
-                                    if quality3.get("good"):
-                                        result["screenshot_method"] = f"playwright-retry-url"
-                                        logger.info(f"[ScraperAgent] Retry URL PASSED: {retry_url}")
-                                        retried = True
-                                        break
-                                except Exception:
-                                    continue
-
-                            if not retried:
-                                # === ATTEMPT 4: Try getting a different product from API ===
-                                logger.info(f"[ScraperAgent] Retry 3: Trying a different product...")
-                                alt_product = await _get_product_url_from_api(url, scraped.get("platform", ""))
-                                if alt_product and alt_product != real_product_url:
-                                    try:
-                                        await page.goto(alt_product, wait_until="domcontentloaded", timeout=20000)
-                                        await page.wait_for_timeout(5000)
-                                        await _dismiss_popups(page)
-                                        await page.evaluate("window.scrollTo(0, 0)")
-                                        await page.wait_for_timeout(2000)
-                                        await page.screenshot(path=screenshot_path, full_page=False)
-
-                                        quality4 = await QualityChecker.check_page(page, screenshot_path, brand_name)
-                                        if quality4.get("good"):
-                                            result["screenshot_method"] = "playwright-retry-alt-product"
-                                            logger.info(f"[ScraperAgent] Alt product PASSED")
-                                            retried = True
-                                    except Exception:
-                                        pass
-
-                            if not retried:
-                                result["screenshot_method"] = "playwright-unvalidated"
-                                logger.warning(f"[ScraperAgent] All retries failed for {brand_name}, keeping best effort")
-
-                # --- Check TikTok Ad Library ---
-                logger.info(f"[ScraperAgent] Checking TikTok Ad Library for: {brand_name}")
-                tiktok_ads = await _check_tiktok_ad_library(page, brand_name)
-                scraped["tiktok_ads"] = tiktok_ads
+                # --- Screenshot the homepage ---
+                await page.evaluate("window.scrollTo(0, 0)")
+                await page.wait_for_timeout(1000)
+                await page.screenshot(path=screenshot_path, full_page=False)
+                result["screenshot_path"] = screenshot_path
+                result["screenshot_method"] = "playwright-homepage"
+                logger.info(f"[ScraperAgent] Homepage screenshot saved: {screenshot_path}")
 
                 result["scraped_data"] = scraped
                 result["success"] = True
